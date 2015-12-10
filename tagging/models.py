@@ -7,7 +7,7 @@ try:
 except NameError:
     from sets import Set as set
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models.query import QuerySet
@@ -459,7 +459,7 @@ class Tag(models.Model):
     """
     A tag.
     """
-    ACCESS_CHOICES = getattr(settings, "TAGGING_ACCESS_CHOICES", (('0', 'user'), ('1', 'staff'), ('2', 'admin'), ('3', 'pivot'))) 
+    ACCESS_CHOICES = getattr(settings, "TAGGING_ACCESS_CHOICES", (('0', 'user'), ('1', 'staff'), ('2', 'admin'), ('3', 'pivot')))
     name = models.CharField(_('name'), max_length=50, db_index=True)
     access = models.CharField(_('level'), max_length=2, choices=ACCESS_CHOICES)
 
@@ -476,7 +476,7 @@ class Tag(models.Model):
 
     def get_icon(self):
         return "<span class=\"indicator tag %s ui-corner-all\">%s</span>" % (self.get_access_display(), self.name)
-        
+
 
 class TaggedItem(models.Model):
     """
@@ -485,7 +485,7 @@ class TaggedItem(models.Model):
     tag          = models.ForeignKey(Tag, verbose_name=_('tag'), related_name='items')
     content_type = models.ForeignKey(ContentType, verbose_name=_('content type'))
     object_id    = models.PositiveIntegerField(_('object id'), db_index=True)
-    object       = generic.GenericForeignKey('content_type', 'object_id')
+    object       = GenericForeignKey('content_type', 'object_id')
 
     objects = TaggedItemManager()
 
