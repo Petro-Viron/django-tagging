@@ -9,3 +9,4 @@ logs/*.*
 .fuse*
 local_settings.py
 layer/data/
+docs/_build
