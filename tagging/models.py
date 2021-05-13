@@ -25,13 +25,14 @@ qn = connection.ops.quote_name
 
 class TagManager(models.Manager):
 
-    def update_tags(self, obj, tag_names):
+    def update_tags(self, obj, tag_names, access):
         """
         Update tags associated with an object.
         """
         ctype = ContentType.objects.get_for_model(obj)
         current_tags = list(self.filter(items__content_type__pk=ctype.pk,
-                                        items__object_id=obj.pk))
+                                        items__object_id=obj.pk,
+                                        access=access))
         updated_tag_names = parse_tag_input(tag_names)
         if settings.FORCE_LOWERCASE_TAGS:
             updated_tag_names = [t.lower() for t in updated_tag_names]
@@ -55,7 +56,7 @@ class TagManager(models.Manager):
                     tag=tag,
                 )
 
-    def add_tag(self, obj, tag_name):
+    def add_tag(self, obj, tag_name, access):
         """
         Associates the given object with a tag.
         """
@@ -69,19 +70,20 @@ class TagManager(models.Manager):
         tag_name = tag_names[0]
         if settings.FORCE_LOWERCASE_TAGS:
             tag_name = tag_name.lower()
-        tag, created = self.get_or_create(name=tag_name)
+        tag, created = self.get_or_create(name=tag_name, access=access)
         ctype = ContentType.objects.get_for_model(obj)
         TaggedItem._default_manager.get_or_create(
             tag=tag, content_type=ctype, object_id=obj.pk)
 
-    def get_for_object(self, obj):
+    def get_for_object(self, obj, access=['0']):
         """
         Create a queryset matching all tags associated with the given
-        object.
+        object, and access level.
         """
         ctype = ContentType.objects.get_for_model(obj)
         return self.filter(items__content_type__pk=ctype.pk,
-                           items__object_id=obj.pk)
+                           items__object_id=obj.pk,
+                           access__in=access)
 
     def _get_usage(self, model, counts=False, min_count=None,
                    extra_joins=None, extra_criteria=None, params=None):
@@ -473,6 +475,8 @@ class Tag(models.Model):
     """
     A tag.
     """
+    ACCESS_CHOICES = getattr(settings, "TAGGING_ACCESS_CHOICES",
+                             (('0', 'user'), ('1', 'staff'), ('2', 'admin'), ('3', 'pivot')))
     name = models.CharField(
         _('name'), max_length=settings.MAX_TAG_LENGTH,
         unique=True, db_index=True)
@@ -481,11 +485,15 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ('name',)
+        unique_together = ('name', 'access')
         verbose_name = _('tag')
         verbose_name_plural = _('tags')
 
     def __str__(self):
         return self.name
+
+    def get_icon(self):
+        return "<span class=\"indicator tag %s ui-corner-all\">%s</span>" % (self.get_access_display(), self.name)
 
 
 class TaggedItem(models.Model):
