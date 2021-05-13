@@ -18,6 +18,12 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(
                     unique=True, max_length=50,
                     verbose_name='name', db_index=True)),
+                ('access', models.CharField(
+                    max_length=2, verbose_name='level',
+                    choices=[(b'0', b'user'),
+                             (b'1', b'staff'),
+                             (b'2', b'admin'),
+                             (b'3', b'pivot')])),
             ],
             options={
                 'ordering': ('name',),
