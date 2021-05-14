@@ -49,7 +49,7 @@ class TagManager(models.Manager):
         current_tag_names = [tag.name for tag in current_tags]
         for tag_name in updated_tag_names:
             if tag_name not in current_tag_names:
-                tag, created = self.get_or_create(name=tag_name)
+                tag, created = self.get_or_create(name=tag_name, access=access)
                 TaggedItem._default_manager.get_or_create(
                     content_type_id=ctype.pk,
                     object_id=obj.pk,
