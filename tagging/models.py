@@ -480,7 +480,7 @@ class Tag(models.Model):
     name = models.CharField(
         _('name'), max_length=settings.MAX_TAG_LENGTH,
         unique=True, db_index=True)
-
+    access = models.CharField(_('level'), max_length=2, choices=ACCESS_CHOICES)
     objects = TagManager()
 
     class Meta:
