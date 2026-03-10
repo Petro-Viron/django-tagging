@@ -1,5 +1,5 @@
 """Test urls for tagging."""
-from django.conf.urls import url
+from django.urls import re_path as url
 
 from tagging.tests.models import Article
 from tagging.views import TaggedObjectList
